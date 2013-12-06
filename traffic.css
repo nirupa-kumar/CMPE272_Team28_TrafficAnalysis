@@ -1,0 +1,50 @@
+.tableGrid table { border-collapse: collapse; text-align: left; width: 100%; } .tableGrid {font: normal 14px/150% Arial, Helvetica, sans-serif; background: #fff; overflow: hidden; border: 1px solid #006699; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }.tableGrid table td, .tableGrid table th { padding: 3px 10px; }.tableGrid table tbody td { color: #3472CF; border-left: 0px solid #7D9AC4;font-size: 12px;font-weight: bold; }.tableGrid table tbody .alt td { background: #BCD6F4; color: #17456E; }.tableGrid table tbody td:first-child { border-left: none; }.tableGrid table tbody tr:last-child td { border-bottom: none; }
+
+.trafficTable {
+	margin:0px;padding:0px;
+	width:100%;
+	border:1px solid #cde1f4;
+	
+}.trafficTable table{
+    border-collapse: collapse;
+        border-spacing: 0;
+	width:100%;
+	height:100%;
+	margin:0px;padding:0px;
+}
+.trafficTable tr:hover td{
+	
+}
+.trafficTable tr:nth-child(odd){ background-color:#AFBAEF; }
+.trafficTable tr:nth-child(even)    { background-color:#ffffff; }.trafficTable td{
+	vertical-align:middle;
+	
+	
+	border:0px solid #cde1f4;
+	border-width:0px 0px 0px 0px;
+	text-align:left;
+	padding:7px;
+	font-size:14px;
+	font-family:Helvetica;
+	font-weight:normal;
+	color:#000000;
+}.trafficTable tr:last-child td{
+	border-width:0px 0px 0px 0px;
+}.trafficTable tr td:last-child{
+	border-width:0px 0px 0px 0px;
+}.trafficTable tr:last-child td:last-child{
+	border-width:0px 0px 0px 0px;
+}
+.trafficTable v-caption{
+    color: black;
+	font-size:12px;
+	font-family:Helvetica;
+	font-weight:bold;
+}
+
+.trafficCSS {
+	background-color:#ffffff;
+	font-size:12px;
+	font-family:Helvetica;
+	font-weight:bold;
+}
