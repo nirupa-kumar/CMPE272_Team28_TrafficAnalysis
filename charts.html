@@ -1,0 +1,597 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <title>
+      Traffic Analysis Charts
+    </title>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script language="JavaScript" src="jquery-1.10.2.js"></script>
+<link rel="stylesheet" type="text/css" href="css/ui-lightness/jquery-ui-1.10.3.custom.min.css" />
+<link rel="stylesheet" type="text/css" href="traffic.css" />
+<!-- script src="js/jquery-ui-1.10.3.custom.js"></script-->
+<script src="js/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="development-bundle/ui/minified/i18n/jquery-ui-i18n.min.js"></script>
+    <script type="text/javascript">
+      google.load('visualization', '1', {packages: ['corechart']});
+    </script>
+    <script type="text/javascript">
+    
+    var monthArray = [];
+    monthArray[1] = "January";
+    monthArray[2] = "February";
+    monthArray[3] = "March";
+    monthArray[4] = "April";
+    monthArray[5] = "May";
+    monthArray[6] = "June";
+    monthArray[7] = "July";
+    monthArray[8] = "August";
+    monthArray[9] = "September";
+    monthArray[10] = "October";
+    monthArray[11] = "November";
+    monthArray[12] = "December";
+    
+    
+    function initialize() {
+    	hideRankingSelection();
+		populateDropDowns();
+		registerHandlers();
+		
+		//drawVisualization();
+	}
+    
+    function hideRankingSelection(){
+		$("#rankGraphs").hide();
+		$("#state").prop("disabled", false);
+		$("#city").prop("disabled", false);
+		$("#but_getLocations").prop("disabled", false);
+	}
+	
+	function showRankingSelection(){
+		$("#rankGraphs").show();
+		$("#state").prop("disabled", true);
+		$("#city").prop("disabled", true);
+		$("#but_getLocations").prop("disabled", true);
+	}
+    
+    function registerHandlers(){
+    	$("#state").on('change', function () {
+  		  
+  		  var statename = $(this).children("option").filter(":selected").text();
+  		  
+  		  $.ajax({
+  				url : "http://localhost:8080/CloudServer/webapi/traffic/cities/"+statename,
+  				type : "GET",
+  				dataType : "json",
+  				success : function(data) {
+  					var cities = data;
+  					var options = '<option value= "All">All</option>';
+  			        for (var i = 0; i < cities.length; i++) {
+  			            options += '<option value="' + cities[i].citycode + '">' + cities[i].cityname + '</option>';
+  			        }
+  			        $('#city').html(options);
+  			       
+  				}
+  			});
+  		});
+    	// $.datepicker.setDefaults(
+ 		//	    $.extend($.datepicker.regional[""])
+ 		//	  );	
+ 		// $("#year").datepicker({changeMonth: true, changeYear: true, yearRange: '2007:2011', maxDate: new Date('2011-12-31') });
+    }
+    
+    function populateDropDowns(){
+    	$("#streetAddrSpan").hide();
+		var holidays = ["New Year's Eve", "New Year's Day", "Memorial Day", "Independence Day", "Labor Day", "Veteran's Day", "Thanksgiving", "Christmas"];
+		//var holidayYears = ["2007", "2008", "2009", "2010", "2011"];
+		var years = ["2007", "2008", "2009", "2010", "2011"];
+		
+		var optionHolidays = '<option value= "None">None</option>';
+		for(var j=0;j<7;j++){
+			optionHolidays += '<option value="' + holidays[j] + '">' + holidays[j] + '</option>';
+		}
+		$('#holiday').append(optionHolidays);
+		 
+		var optionYears = '<option value= "All">All</option>';
+		for(var k=0;k<5;k++){
+			optionYears += '<option value="' + years[k] + '">' + years[k] + '</option>';
+		}
+		$('#year').html(optionYears);
+		
+	//	$("#holidayYear").prop('disabled', true);
+		
+		var acctypes = '<option value= "999">None</option>';
+		acctypes += '<option value= "100">Drunken Driving</option>';
+		acctypes += '<option value= "2">Rain</option>';
+		acctypes += '<option value= "3">Sleet, Hail</option>';
+		acctypes += '<option value= "4">Snow</option>';
+		acctypes += '<option value= "5">Fog, Smog, Smoke</option>';
+		acctypes += '<option value= "6">Severe Crosswinds</option>';
+		acctypes += '<option value= "7">Blowing Sand, Soil, Dirt</option>';
+		acctypes += '<option value= "10">Cloudy</option>';
+		acctypes += '<option value= "11">Blowing snow</option>';
+				
+		$("#accType").append(acctypes);
+		
+		$.ajax({
+			url : "http://localhost:8080/CloudServer/webapi/traffic/states",
+			type : "GET",
+			dataType : "json",
+			success : function(data) {
+				var states = data;
+				var options = '<option value= "All">All</option>';
+		        for (var i = 0; i < states.length; i++) {
+		            options += '<option value="' + states[i].statecode + '">' + states[i].statename + '</option>';
+		        }
+		       
+		        var options2 = '<option value= "All">All</option>';
+		        $('#state').html(options);
+		        $('#city').html(options2);
+			}
+		});
+		
+		$("#checkbox_Rank").change(function() {
+		    if(this.checked) {
+		    	showRankingSelection();
+		    }else if(this.checked == false){
+		    	hideRankingSelection();
+		    }
+		});
+        
+	}
+
+	function getStats() {
+		
+		var statecode = $("#state").val();
+		var citycode = $("#city").val();
+		var atype = $("#accType").val();
+		var holid = $("#holiday").val();
+		var year = $("#year").val();
+		
+		if(statecode == 'All' && year == 'All'){
+			getAllStateStatsByYear();
+			return;
+		}
+		
+		if(statecode == 'All' && year != 'All'){
+			getAllStateStatsByMonth();
+			return;
+		}
+		
+		if(citycode != 'All' && year != 'All'){
+			getCityStatsByMonth();
+			return;
+		}
+		
+		if(citycode != 'All' && year == 'All'){
+			getCityStatsByYear();
+			return;
+		}
+		
+		if(statecode != "All" && year == "All"){
+			getStatsByYear();
+		}
+		
+		if(statecode != "All" &&  year != "All" ){
+		//fetch monthly stats for state
+			var t_url = "http://localhost:8080/CloudServer/webapi/traffic/getStatsByState/"+statecode+"/"+citycode+"/"+year+"/"+holid+"/"+atype;
+			$.ajax({
+				//url : 'http://localhost:8080/CloudServer/webapi/traffic/getAccidentLocations/2011/1/15',
+				url : t_url,
+				type : 'GET',
+				dataType : 'json',
+				success : function(data) {
+					drawVisualizationStateMonthly(data);
+					    
+				}
+			});
+		}
+    }
+	
+	/*function getAllStateStatsByMonth(){
+		var t_url = "http://localhost:8080/CloudServer/webapi/traffic/getStatsByState/"+statecode+"/"+citycode+"/"+year+"/"+holid+"/"+atype;
+		$.ajax({
+			//url : 'http://localhost:8080/CloudServer/webapi/traffic/getAccidentLocations/2011/1/15',
+			url : t_url,
+			type : 'GET',
+			dataType : 'json',
+			success : function(data) {
+				drawVisualizationStateMonthly(data);
+				    
+			}
+		});
+	}*/
+	
+	function getStatsByYear(){
+		
+		var statecode = $("#state").val();
+		var citycode = $("#city").val();
+
+		var atype = $("#accType").val();
+
+		var holid = $("#holiday").val();
+		var year = $("#year").val();
+		
+		var t_url = "http://localhost:8080/CloudServer/webapi/traffic/getStatsByState/"+statecode+"/"+citycode+"/"+year+"/"+holid+"/"+atype;
+		$.ajax({
+			url : t_url,
+			type : 'GET',
+			dataType : 'json',
+			success : function(data) {
+				// Some raw data (not necessarily accurate)
+		        var graphArray = data;
+		        var dataArray = [];
+		        dataArray[0] = ['Year', 'Number of Accidents'];
+		        for(var i=0;i< graphArray.length;i++){
+		        	dataArray[i+1] = [ ""+graphArray[i].year, graphArray[i].numincidents ];
+		        }
+
+		        var dataTab2 =  google.visualization.arrayToDataTable(dataArray);
+		        var options = {
+		          title : '"Accident Statistics"',
+		          vAxis: {title: "Number of accidents"},
+		          hAxis: {title: "Year"},
+		          seriesType: "bars",
+		          series: {1: {type: "line"}},
+		          backgroundColor : {stroke: "gray", strokeWidth: 5},
+		          colors : ['orange', 'blue']
+		        };
+
+		        var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+		        chart.draw(dataTab2, options);
+				    
+			}
+		});
+		
+	}
+    
+	function getAllStateStatsByMonth(){
+		var statecode = $("#state").val();
+			var citycode = $("#city").val();
+	
+			var atype = $("#accType").val();
+	
+			var holid = $("#holiday").val();
+			var year = $("#year").val();
+			
+			var t_url = "http://localhost:8080/CloudServer/webapi/traffic/getStatsAllStates/"+year+"/"+holid+"/"+atype;
+			$.ajax({
+				url : t_url,
+				type : 'GET',
+				dataType : 'json',
+				success : function(data) {
+					// Some raw data (not necessarily accurate)
+			        var graphArray = data;
+			        var dataArray = [];
+			        dataArray[0] = ['Month', 'Number of Accidents'];
+			        for(var i=0;i< graphArray.length;i++){
+			        	dataArray[i+1] = [ monthArray[graphArray[i].month], graphArray[i].numincidents ];
+			        }
+	
+			        var dataTab2 =  google.visualization.arrayToDataTable(dataArray);
+			        var options = {
+			          title : '"Accident Statistics"',
+			          vAxis: {title: "Number of accidents"},
+			          hAxis: {title: "Month"},
+			          seriesType: "bars",
+			          series: {1: {type: "line"}},
+			          backgroundColor : {stroke: "gray", strokeWidth: 5},
+			          colors :['blue', 'orange']
+			        };
+
+			        var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+			        chart.draw(dataTab2, options);
+					    
+				}
+			});
+	}
+	
+	function getAllStateStatsByYear(){
+		var statecode = $("#state").val();
+			var citycode = $("#city").val();
+	
+			var atype = $("#accType").val();
+	
+			var holid = $("#holiday").val();
+			var year = $("#year").val();
+			
+			var t_url = "http://localhost:8080/CloudServer/webapi/traffic/getStatsAllStates/"+year+"/"+holid+"/"+atype;
+			$.ajax({
+				url : t_url,
+				type : 'GET',
+				dataType : 'json',
+				success : function(data) {
+					// Some raw data (not necessarily accurate)
+			        var graphArray = data;
+			        var dataArray = [];
+			        dataArray[0] = ['Year', 'Number of Accidents'];
+			        for(var i=0;i< graphArray.length;i++){
+			        	dataArray[i+1] = [ ""+graphArray[i].year, graphArray[i].numincidents ];
+			        }
+	
+			        var dataTab2 =  google.visualization.arrayToDataTable(dataArray);
+			        var options = {
+			          title : '"Accident Statistics"',
+			          vAxis: {title: "Number of accidents"},
+			          hAxis: {title: "Year"},
+			          seriesType: "bars",
+			          series: {1: {type: "line"}},
+			          backgroundColor : {stroke: "gray", strokeWidth: 5},
+			          colors :['blue', 'orange']
+			        };
+
+			        var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+			        chart.draw(dataTab2, options);
+					    
+				}
+			});
+	}
+	
+	function getCityStatsByMonth(){
+		var statecode = $("#state").val();
+			var citycode = $("#city").val();
+	
+			var atype = $("#accType").val();
+	
+			var holid = $("#holiday").val();
+			var year = $("#year").val();
+			
+			var t_url = "http://localhost:8080/CloudServer/webapi/traffic/getStatsByCity/"+statecode+"/"+citycode+"/"+year+"/"+holid+"/"+atype;
+			$.ajax({
+				url : t_url,
+				type : 'GET',
+				dataType : 'json',
+				success : function(data) {
+					// Some raw data (not necessarily accurate)
+			        var graphArray = data;
+			        var dataArray = [];
+			        dataArray[0] = ['Month', 'Number of Accidents'];
+			        for(var i=0;i< graphArray.length;i++){
+			        	dataArray[i+1] = [ monthArray[graphArray[i].month], graphArray[i].numincidents ];
+			        }
+	
+			        var dataTab2 =  google.visualization.arrayToDataTable(dataArray);
+			        var options = {
+			          title : '"Accident Statistics"',
+			          vAxis: {title: "Number of accidents"},
+			          hAxis: {title: "Month"},
+			          seriesType: "bars",
+			          series: {1: {type: "line"}},
+			          backgroundColor : {stroke: "gray", strokeWidth: 5},
+			          colors :['blue', 'orange']
+			        };
+
+			        var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+			        chart.draw(dataTab2, options);
+					    
+				}
+			});
+	}
+	
+	function getCityStatsByYear(){
+		var statecode = $("#state").val();
+			var citycode = $("#city").val();
+	
+			var atype = $("#accType").val();
+	
+			var holid = $("#holiday").val();
+			var year = $("#year").val();
+			
+			var t_url = "http://localhost:8080/CloudServer/webapi/traffic/getStatsByCity/"+statecode+"/"+citycode+"/"+year+"/"+holid+"/"+atype;
+			$.ajax({
+				url : t_url,
+				type : 'GET',
+				dataType : 'json',
+				success : function(data) {
+					// Some raw data (not necessarily accurate)
+			        var graphArray = data;
+			        var dataArray = [];
+			        dataArray[0] = ['Year', 'Number of Accidents'];
+			        for(var i=0;i< graphArray.length;i++){
+			        	dataArray[i+1] = [ ""+graphArray[i].year, graphArray[i].numincidents ];
+			        }
+	
+			        var dataTab2 =  google.visualization.arrayToDataTable(dataArray);
+			        var options = {
+			          title : '"Accident Statistics"',
+			          vAxis: {title: "Number of accidents"},
+			          hAxis: {title: "Year"},
+			          seriesType: "bars",
+			          series: {1: {type: "line"}},
+			          backgroundColor : {stroke: "gray", strokeWidth: 5},
+			          colors : ['blue', 'orange']
+			        };
+
+			        var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+			        chart.draw(dataTab2, options);
+					    
+				}
+			});
+	}
+	
+      function drawVisualizationStateMonthly(data) {
+        // Some raw data (not necessarily accurate)
+        var graphArray = data;
+        var dataArray = [];
+        dataArray[0] = ["Month", "Number of Accidents"];
+        for(var i=0;i< graphArray.length;i++){
+        	dataArray[i+1] = [ monthArray[graphArray[i].month], graphArray[i].numincidents ];
+        }
+        
+        var dataTab2 =  google.visualization.arrayToDataTable(dataArray);
+        var options = {
+          title : '"Accident Statistics"',
+          vAxis: {title: "Number of Accidents"},
+          hAxis: {title: "Month"},
+          seriesType: "bars",
+          series: {1: {type: "line"}},
+          backgroundColor : {stroke: "gray", strokeWidth: 5},
+          colors : [ 'orange','lightBlue','red','blue', 'green', 'orange']
+         
+        };
+        
+        var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+        chart.draw(dataTab2, options);
+      }
+      
+      function drawVisualizationStateYearly(data) {
+          // Some raw data (not necessarily accurate)
+          var graphArray = data;
+          var dataArray = [];
+          dataArray[0] = ["Year", "Number of Accidents"];
+          for(var i=0;i< graphArray.length;i++){
+          	dataArray[i+1] = [ ""+graphArray[i].year, graphArray[i].numincidents ];
+          }
+          
+          var dataTab2 =  google.visualization.arrayToDataTable(dataArray);
+          var options = {
+            title : '"Accident Statistics"',
+            vAxis: {title: "Number of Accidents"},
+            hAxis: {title: "Year"},
+            seriesType: "bars",
+            series: {1: {type: "line"}},
+            backgroundColor : {stroke: "gray", strokeWidth: 5},
+            colors : [ 'orange','lightBlue','red','blue', 'green', 'orange']
+           
+          };
+          
+          var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+          chart.draw(dataTab2, options);
+        }
+      
+      	function getRanks(){
+      		if($("#radio_rankByState").is(':checked')){
+      			getRanksByState();
+      		}else if($("#radio_rankByCity").is(':checked')){
+      			if($("#num_cities").val() == null || !$.isNumeric($("#num_cities").val())){
+      				alert("Enter Number of cities to show");
+      			}else{
+      				getRanksByCities();
+      			}
+      		}
+      	}
+      	
+        function getRanksByState(){
+        	
+        	var atype = $("#accType").val();
+        	var holid = $("#holiday").val();
+			var year = $("#year").val();
+			
+        	var t_url = "http://localhost:8080/CloudServer/webapi/traffic/getStateRanks/"+year+"/"+holid+"/"+atype;
+			$.ajax({
+				//url : 'http://localhost:8080/CloudServer/webapi/traffic/getAccidentLocations/2011/1/15',
+				url : t_url,
+				type : 'GET',
+				dataType : 'json',
+				success : function(data) {
+					// Some raw data (not necessarily accurate)
+			        var graphArray = data;
+			        var dataArray = [];
+			        dataArray[0] = ['State', 'Number of Accidents'];
+			        for(var i=0;i< graphArray.length;i++){
+			        	dataArray[i+1] = [ ""+graphArray[i].name, graphArray[i].numincidents ];
+			        }
+	
+			        var dataTab2 =  google.visualization.arrayToDataTable(dataArray);
+			        var options = {
+			          title : '"Accident Statistics"',
+			          vAxis: {title: "Number of accidents"},
+			          hAxis: {title: "State"},
+			          seriesType: "bars",
+			          series: {1: {type: "line"}},
+			          backgroundColor : {stroke: "gray", strokeWidth: 5},
+			          colors : ['green', 'orange']
+			        };
+
+			        var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+			        chart.draw(dataTab2, options);
+					    
+				}
+			});
+        }
+        
+		function getRanksByCities(){
+        	
+        	var atype = $("#accType").val();
+        	var holid = $("#holiday").val();
+			var year = $("#year").val();
+			var numcities = $("#num_cities").val();
+			
+        	var t_url = "http://localhost:8080/CloudServer/webapi/traffic/getCityRanks/"+year+"/"+holid+"/"+atype+"/"+numcities;
+			$.ajax({
+				//url : 'http://localhost:8080/CloudServer/webapi/traffic/getAccidentLocations/2011/1/15',
+				url : t_url,
+				type : 'GET',
+				dataType : 'json',
+				success : function(data) {
+					// Some raw data (not necessarily accurate)
+			        var graphArray = data;
+			        var dataArray = [];
+			        dataArray[0] = ['City', 'Number of Accidents'];
+			        for(var i=0;i< graphArray.length;i++){
+			        	dataArray[i+1] = [ ""+graphArray[i].City, graphArray[i].numincidents ];
+			        }
+	
+			        var dataTab2 =  google.visualization.arrayToDataTable(dataArray);
+			        var options = {
+			          title : '"Accident Statistics"',
+			          vAxis: {title: "Number of accidents"},
+			          hAxis: {title: "City"},
+			          seriesType: "bars",
+			          series: {1: {type: "line"}},
+			          backgroundColor : {stroke: "gray", strokeWidth: 5},
+			          colors : ['purple', 'orange']
+			        };
+
+			        var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+			        chart.draw(dataTab2, options);
+					    
+				}
+			});
+        }
+      google.setOnLoadCallback(initialize);
+    </script>
+  </head>
+  <body class="trafficCSS">
+  	
+  	<div id="selections" style="width:1500px;height:60px;">
+	<div style="float:left;overflow: hidden;">
+	
+		<span>State </span><select id="state" name = "state"></select>
+		<span> City </span><select id="city" name = "city"></select>
+		<span> Accident Type/Condition </span> <select id="accType" name="accType"></select><br>
+		
+		<label><input type="checkbox" id="checkbox_Rank" name = "checkboxCompare" value="Compare"> Ranking Graphs</label>
+		<div id="rankGraphs">
+		<span> <input type="radio" id ="radio_rankByState" name="rankGroup" value="rankByState">Rank States  </span>
+		<span> <input type="radio" id ="radio_rankByCity" name="rankGroup" value="rankByCity">Rank Cities </span>
+		<span> &nbsp&nbsp&nbspNumber of Cities <input type="text" id ="num_cities" name="numCities" size="4" type="number"></span>
+		<span> <input type="button" id = "but_getRanks" name="butGetRanks" value="Submit" onclick=getRanks()>
+		</div>
+	</div>
+
+	<div style="float:left;">
+		<span>Year </span> <select id="year" name="year"></select>
+			
+			<!-- span><input type="radio" id="radio_dateRange" name="dateGroup" value="dateRange" checked><b> Date Range :</b></span>
+			<span> Begin Date </span> <input type="text" id="beginDate" />
+			<span> End Date </span> <input type="text" id="endDate" /><br>
+			<input type="radio" id ="radio_specificDate" name="dateGroup" value="specificDate"> Date
+			<span> <input type ="text" id="specificDate" name="specificDate"></span><br>
+			<input type="radio" id = "radio_holidayDate" name="dateGroup" value="holidayDate"--> 
+			<span> Holiday </span> <select id="holiday" name="holiday"></select>
+			<!-- span> Holiday Year </span> <select id="holidayYear" name="holidayYear"></select-->
+	</div>		
+</div>
+
+<br>
+<div style="float:left;">
+<input type="button" id = "but_getLocations" name="butGetStats" value="Get Statistics" onclick=getStats()>
+<!-- input type="button" id = "but_clearMap" name="butClearMap" value="Clear Map" onclick=deleteMarkers()-->
+<!-- label><input type="checkbox" id="checkbox_Compare" name = "checkboxCompare" value="Compare"> Compare</label-->
+</div>
+<br><br>
+
+<div id="chart_div" style="width: 1500px; height: 700px;"></div>
+  </body>
+</ht
