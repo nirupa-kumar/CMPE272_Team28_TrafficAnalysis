@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script language="JavaScript" src="jquery-1.10.2.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<link rel="stylesheet" href="/resources/demos/style.css" />
+
+<script>
+
+function initialize(){
+	document.getElementById('mapFrame').contentWindow.location.reload(true);
+	document.getElementById('chartsFrame').contentWindow.location.reload(true);
+	registerHandlers();
+	$("#divMapChartNavigation").hide();
+	$("div.classMapchart").hide();
+	$("#content_maps_charts").hide();
+	
+}
+
+function hideContentMapsChart(){
+	$("#content_maps_charts").hide();
+}
+
+function showNavigation(userType){
+	$("#contentMessage").hide();
+	 hideContentMapsChart();
+	if(userType == "admin"){
+		$("#but_map").show();
+		$("#but_charts").show();
+	}else if(userType == "generalUser"){
+		$("#but_map").show();
+		$("#but_charts").hide();
+	}else if(userType == "insuranceCompany"){
+		$("#but_map").hide();
+		$("#but_charts").show();
+	}else if(userType == "lawEnforcement"){
+		$("#but_map").show();
+		$("#but_charts").show();
+	}
+	$("#divMapChartNavigation").show();
+}
+
+function showContentMapsChart(userType){
+	$("#contentMessage").hide();
+	$("#content_maps_charts").show();
+}
+
+function showMap(){
+	showContentMapsChart("admin");
+	$("div.classMapchart").hide();
+	$("#mapContent").show();
+}
+
+function showCharts(){
+	showContentMapsChart("admin");
+	$("div.classMapchart").hide();
+	$("#chartsContent").show();
+}
+
+
+function registerHandlers(){
+	$("#but_admin").on( 'click', function(){
+		showNavigation("admin");
+	});
+	
+	$("#but_generalUser").on( 'click', function(){
+		showNavigation("generalUser");
+		
+	});
+	
+	$("#but_insuranceCompany").on( 'click', function(){
+		showNavigation("insuranceCompany");
+	});
+	
+	$("#but_lawEnforcement").on( 'click', function(){
+		showNavigation("lawEnforcement");
+	});
+	$("#but_signout").on( 'click', function(){
+		alert("signout clicked");
+	});
+	
+	$("#but_map").on( 'click', function(){
+		showMap();
+	
+	});
+	
+	$("#but_charts").on( 'click', function(){
+		showCharts();
+		
+	});
+}
+
+
+window.onload = initialize;
+</script>
+
+
+</head>
+<body background='img/mainBackground.jpg'>
+
+
+<div id="container" style="width:100%">
+
+<div id="header" style="font-family:verdana;background-image: url(img/mainBackground.jpg);">
+<h1 style="margin-bottom:0;margin-top:0;height:80px; color:#ffffff"> Traffic Accident Analysis </h1></div>
+
+<div id="menu" style="background-color:#EEEEEE;height:25px;width:100%;float:left;">
+
+<div id="buttons">
+<span><input type="button" id="but_generalUser" value="General User" style="border-style:none;">|</span>
+<span><input type="button" id="but_insuranceCompany" value="Insurance Company" style="border-style:none;">|</span>
+<span><input type="button" id="but_lawEnforcement" value="Law Enforcement" style="border-style:none;">|</span>
+<span><input type="button" id="but_admin" value="Admin" style="border-style:none;"></span>
+<span>|<input type="button" id="but_signout" value="Sign Out"></span>
+</div>
+
+<!--  div id="div_signout" style="float:right;">
+<span>|<input type="button" id="but_signout" value="Sign Out"></span>
+</div-->
+
+</div>
+
+<div id="content" style="background-color:#FFFFF0;height:100%;width:100%;float:left; min-height:1200px">
+<label id="contentMessage">Login to Access</label>
+<div id="divMapChartNavigation" style="height:20px">
+  <span><input type="button" id="but_map" value="Map" style="border-style:none;"></span>
+   <span><input type="button" id="but_charts" value="Charts" style="border-style:none;"></span>
+</div>
+
+<div id="content_maps_charts" style="height:100%; width:100%; padding-top:10px; min-height:1000px">
+	 <div id="mapContent" style="height:100%; width:100%;" class="classMapchart">
+		 <iframe id="mapFrame" src="maps2.html" width="100%" height="100%" style="border-width:2px; border-color:#333; background:#FFF; border-style:solid; min-height:1000px">
+		 </iframe>
+	 </div>
+	 <div id="chartsContent" style="height:100%; width:100%;" class="classMapchart">
+		  <iframe id="chartsFrame" src="charts.html" width="100%" height="100%" style="border-width:2px; border-color:#333; background:#FFF; border-style:solid;min-height:1000px">
+		 </iframe>
+	 </div>
+</div>
+</div>
+
+<div id="footer" style="background-color:#FFA500;clear:both;text-align:center;">
+Traffic Accident Analysis</div>
+
+
+
+</div>
+ 
+</body>
+</html>
