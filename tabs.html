@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ 
+  <head>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>	
+
+    <!-- This page is copyright Elated Communications Ltd. (www.elated.com) -->
+
+    <title>Accident Crash Statistics</title>
+
+    <style type="text/css">
+      body { font-size: 80%; font-family: 'Lucida Grande', Verdana, Arial, Sans-Serif; }
+      ul#tabs { list-style-type: none; margin: 30px 0 0 0; padding: 0 0 0.3em 0; }
+      ul#tabs li { display: inline; }
+      ul#tabs li a { color: #42454a; background-color: #dedbde; border: 1px solid #c9c3ba; border-bottom: none; padding: 0.3em; text-decoration: none; }
+      ul#tabs li a:hover { background-color: #f1f0ee; }
+      ul#tabs li a.selected { color: #000; background-color: #f1f0ee; font-weight: bold; padding: 0.7em 0.3em 0.38em 0.3em; }
+      div.tabContent { border: 1px solid #c9c3ba; padding: 0.5em; background-color: #f1f0ee; }
+      div.tabContent.hide { display: none; }
+    </style>
+
+    <script type="text/javascript">
+    google.load('visualization', '1', {packages: ['table']});
+    //<![CDATA[
+
+    var tabLinks = new Array();
+    var contentDivs = new Array();
+
+    function init() {
+
+      // Grab the tab links and content divs from the page
+      var tabListItems = document.getElementById('tabs').childNodes;
+      for ( var i = 0; i < tabListItems.length; i++ ) {
+        if ( tabListItems[i].nodeName == "LI" ) {
+          var tabLink = getFirstChildWithTagName( tabListItems[i], 'A' );
+          var id = getHash( tabLink.getAttribute('href') );
+          tabLinks[id] = tabLink;
+          contentDivs[id] = document.getElementById( id );
+        }
+      }
+
+      // Assign onclick events to the tab links, and
+      // highlight the first tab
+      var i = 0;
+
+      for ( var id in tabLinks ) {
+        tabLinks[id].onclick = showTab;
+        tabLinks[id].onfocus = function() { this.blur() };
+        if ( i == 0 ) tabLinks[id].className = 'selected';
+        i++;
+      }
+
+      // Hide all content divs except the first
+      var i = 0;
+
+      for ( var id in contentDivs ) {
+        if ( i != 0 ) contentDivs[id].className = 'tabContent hide';
+        i++;
+      }
+    }
+
+    function showTab() {
+      var selectedId = getHash( this.getAttribute('href') );
+
+      // Highlight the selected tab, and dim all others.
+      // Also show the selected content div, and hide all others.
+      for ( var id in contentDivs ) {
+        if ( id == selectedId ) {
+          tabLinks[id].className = 'selected';
+          contentDivs[id].className = 'tabContent';
+        } else {
+          tabLinks[id].className = '';
+          contentDivs[id].className = 'tabContent hide';
+        }
+      }
+
+      // Stop the browser following the link
+      return false;
+    }
+
+    function getFirstChildWithTagName( element, tagName ) {
+      for ( var i = 0; i < element.childNodes.length; i++ ) {
+        if ( element.childNodes[i].nodeName == tagName ) return element.childNodes[i];
+      }
+    }
+
+    function getHash( url ) {
+      var hashPos = url.lastIndexOf ( '#' );
+      return url.substring( hashPos + 1 );
+    }
+
+    //]]>
+    // Load the Visualization API and the piechart package.
+    google.load('visualization', '1.0', {'packages':['corechart']});
+
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.setOnLoadCallback(drawChart);
+
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and
+    // draws it.
+    function drawChart() {
+
+      // Create the data table.
+      var data = google.visualization.arrayToDataTable([
+                                                        ['Year', 'Austria', 'Bulgaria', 'Denmark', 'Greece'],
+                                                        ['2003',  1336060,    400361,    1001582,   997974],
+                                                        ['2004',  1538156,    366849,    1119450,   941795],
+                                                        ['2005',  1576579,    440514,    993360,    930593],
+                                                        ['2006',  1600652,    434552,    1004163,   897127],
+                                                        ['2007',  1968113,    393032,    979198,    1080887],
+                                                        ['2008',  1901067,    517206,    916965,    1056036]
+                                                      ]);
+
+    
+      // Set chart options
+      var options = {'title':'The economic rankings',
+                     'width':400,
+                     'height':300};
+
+      // Instantiate and draw our chart, passing in some options.
+      var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+      chart.draw(data, options);
+    }
+    
+    function drawVisualization() {
+        // Create and populate the data table.
+        var JSONObject = {
+            cols: [{id: 'task', label: 'Task', type: 'string'},
+                {id: 'hours', label: 'Hours per Day', type: 'number'}],
+            rows: [{c:[{v: 'Work', p: {'style': 'border: 7px solid orange;'}}, {v: 11}]},
+                {c:[{v: 'Eat'}, {v: 2}]},
+                {c:[{v: 'Commute'}, {v: 2, f: '2.000'}]}]};
+      
+        var data = new google.visualization.DataTable(JSONObject, 0.5);
+      
+        // Create and draw the visualization.
+        visualization = new google.visualization.Table(document.getElementById('table'));
+        visualization.draw(data, {'allowHtml': true});
+      }
+      
+
+      google.setOnLoadCallback(drawVisualization); 
+    </script>
+  </head>
+  <body onload="init()">
+    <h1>JavaScript tabs example</h1>
+
+    <ul id="tabs">
+      <li><a href="#about">Tables</a></li>
+      <li><a href="#advantages">Charts</a></li>
+      <li><a href="#usage">Maps</a></li>
+    </ul>
+
+    <div class="tabContent" id="about">
+      <h2>Tables</h2>
+      <div id="table">
+        <p>JavaScript tabs partition your Web page content into tabbed sections. Only one section at a time is visible.</p>
+        <p>The code is written in such a way that the page degrades gracefully in browsers that don't support JavaScript or CSS.</p>
+      </div>
+    </div>
+
+    <div class="tabContent" id="advantages">
+      <h2>Charts</h2>
+      <div id="chart_div">
+        <p>JavaScript tabs are great if your Web page contains a large amount of content.</p>
+        <p>They're also good for things like multi-step Web forms.</p>
+      </div>
+    </div>
+
+    <div class="tabContent" id="usage">
+      <h2>Using tabs</h2>
+      <div>
+        <p>Click a tab to view the tab's content. Using tabs couldn't be easier!</p>
+      </div>
+    </div>
+
+    <p><a href="/articles/javascript-tabs/">Return to the JavaScript Tabs article</a></p>
+
+  </body>
+</html>
